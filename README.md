@@ -14,7 +14,7 @@ Here are some ideas to get you started:
 - 😄 Pronouns: ...
 - ⚡ Fun fact: ...
 -->
-![image](https://github.com/jesse0430/information/blob/main/greeting.gif)
+![image](https://github.com/jesse0430/information/blob/main/greeting%20(1).gif)
 
 # 💫 About Me:
 🔭 I’m currently working on learning new techniques<br>👯 I’m looking for a data engineer or data analyst position <br>🤝 I’m looking for help with UoPeople<br>🌱 I’m currently learning Selenium, API, MongoDB<br>💬 Ask any questions about me<br>📫 How to reach me jessetsai0430@gmail.com<br>
