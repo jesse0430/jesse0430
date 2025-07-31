@@ -119,70 +119,36 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                 filterVariant: 'autocomplete',
                 filterSelectOptions: ipOptions,
                 filterFn: 'fuzzy',
-                // 使用Cell组件来处理编辑和显示
-                Cell: ({ cell, row, table }) => {
-                    const isEditing = table.getState().editingRow?.id === row.id;
-                    
-                    if (isEditing) {
-                        return (
-                            <Autocomplete
-                                size="small"
-                                options={ipOptions}
-                                getOptionLabel={(option) =>
-                                    option.name
-                                        ? `${option.name} (${option.site})`
-                                        : `${option.ip_list?.split('\r\n')[0].slice(0, 50)}... (${option.site})`
-                                }
-                                isOptionEqualToValue={(option, value) => option.pk === (value?.pk ?? null)}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        variant="standard"
-                                        fullWidth
-                                        size="small"
-                                    />
-                                )}
-                                renderOption={(props, option) => (
-                                    <li {...props} key={option.pk}>
-                                        <Tooltip title={<pre>{option.ip_list}</pre>} placement="right" arrow>
-                                            <span>
-                                                {option.name
-                                                    ? `${option.name} (${option.site})`
-                                                    : `${option.ip_list?.split('\r\n')[0].slice(0, 50)}... (${option.site})`}
-                                            </span>
-                                        </Tooltip>
-                                    </li>
-                                )}
-                                onChange={(event, newValue) => {
-                                    console.log('Source IP Autocomplete onChange:', newValue);
-                                    
-                                    // 正确更新编辑行的值
-                                    const editingRow = table.getState().editingRow;
-                                    if (editingRow) {
-                                        table.setEditingRow({
-                                            ...editingRow,
-                                            _valuesCache: {
-                                                ...editingRow._valuesCache,
-                                                source: newValue,
-                                            },
-                                        });
-                                    }
-                                }}
-                                value={row.original?.source || null}
-                                sx={{ minWidth: 200 }}
-                            />
+                muiEditTextFieldProps: ({ cell, row, table }) => ({
+                    select: true,
+                    onChange: (event) => {
+                        const newValue = event.target.value;
+                        console.log('Source IP onChange:', newValue);
+                        
+                        // 直接设置cell的值
+                        cell.setValue(newValue);
+                        
+                        // 同时更新tableData
+                        setTableData((prev) =>
+                            prev.map((item) =>
+                                item.id === row.original.id
+                                    ? { ...item, source: newValue }
+                                    : item
+                            )
                         );
-                    }
-                    
-                    // 非编辑状态的显示
-                    const source = row.original.source;
-                    return source?.name
-                        ? `${source.name} (${source.site})`
-                        : `${source?.ip_list?.split('\r\n')[0].slice(0, 50)}... (${source?.site})` || '';
-                },
-                // 隐藏默认的编辑输入框
-                muiEditTextFieldProps: () => ({
-                    style: { display: 'none' },
+                    },
+                    value: cell.getValue()?.pk || '',
+                    children: ipOptions.map((option) => (
+                        <MenuItem key={option.pk} value={option}>
+                            <Tooltip title={<pre>{option.ip_list}</pre>} placement="right" arrow>
+                                <span>
+                                    {option.name
+                                        ? `${option.name} (${option.site})`
+                                        : `${option.ip_list?.split('\r\n')[0].slice(0, 50)}... (${option.site})`}
+                                </span>
+                            </Tooltip>
+                        </MenuItem>
+                    )),
                 }),
                 accessorFn: (row) => {
                     return row.source?.name
@@ -196,70 +162,36 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                 filterVariant: 'autocomplete',
                 filterSelectOptions: ipOptions,
                 filterFn: 'equals',
-                // 使用Cell组件来处理编辑和显示，与Source IP保持一致
-                Cell: ({ cell, row, table }) => {
-                    const isEditing = table.getState().editingRow?.id === row.id;
-                    
-                    if (isEditing) {
-                        return (
-                            <Autocomplete
-                                size="small"
-                                options={ipOptions}
-                                getOptionLabel={(option) =>
-                                    option.name
-                                        ? `${option.name} (${option.site})`
-                                        : `${option.ip_list?.split('\r\n')[0].slice(0, 50)}... (${option.site})`
-                                }
-                                isOptionEqualToValue={(option, value) => option.pk === (value?.pk ?? null)}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        variant="standard"
-                                        fullWidth
-                                        size="small"
-                                    />
-                                )}
-                                renderOption={(props, option) => (
-                                    <li {...props} key={option.pk}>
-                                        <Tooltip title={<pre>{option.ip_list}</pre>} placement="right" arrow>
-                                            <span>
-                                                {option.name
-                                                    ? `${option.name} (${option.site})`
-                                                    : `${option.ip_list?.split('\r\n')[0].slice(0, 50)}... (${option.site})`}
-                                            </span>
-                                        </Tooltip>
-                                    </li>
-                                )}
-                                onChange={(event, newValue) => {
-                                    console.log('Destination IP Autocomplete onChange:', newValue);
-                                    
-                                    // 正确更新编辑行的值
-                                    const editingRow = table.getState().editingRow;
-                                    if (editingRow) {
-                                        table.setEditingRow({
-                                            ...editingRow,
-                                            _valuesCache: {
-                                                ...editingRow._valuesCache,
-                                                destination: newValue,
-                                            },
-                                        });
-                                    }
-                                }}
-                                value={row.original?.destination || null}
-                                sx={{ minWidth: 200 }}
-                            />
+                muiEditTextFieldProps: ({ cell, row, table }) => ({
+                    select: true,
+                    onChange: (event) => {
+                        const newValue = event.target.value;
+                        console.log('Destination IP onChange:', newValue);
+                        
+                        // 直接设置cell的值
+                        cell.setValue(newValue);
+                        
+                        // 同时更新tableData
+                        setTableData((prev) =>
+                            prev.map((item) =>
+                                item.id === row.original.id
+                                    ? { ...item, destination: newValue }
+                                    : item
+                            )
                         );
-                    }
-                    
-                    // 非编辑状态的显示
-                    const destination = row.original.destination;
-                    return destination?.name
-                        ? `${destination.name} (${destination.site})`
-                        : `${destination?.ip_list?.split('\r\n')[0].slice(0, 50)}... (${destination?.site})` || '';
-                },
-                // 隐藏默认的编辑输入框
-                muiEditTextFieldProps: () => ({
-                    style: { display: 'none' },
+                    },
+                    value: cell.getValue()?.pk || '',
+                    children: ipOptions.map((option) => (
+                        <MenuItem key={option.pk} value={option}>
+                            <Tooltip title={<pre>{option.ip_list}</pre>} placement="right" arrow>
+                                <span>
+                                    {option.name
+                                        ? `${option.name} (${option.site})`
+                                        : `${option.ip_list?.split('\r\n')[0].slice(0, 50)}... (${option.site})`}
+                                </span>
+                            </Tooltip>
+                        </MenuItem>
+                    )),
                 }),
                 accessorFn: (row) => {
                     const destination = row.destination;
