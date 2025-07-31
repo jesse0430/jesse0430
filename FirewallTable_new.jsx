@@ -17,7 +17,6 @@ const FirewallTable = ({ initialPolicies, allList }) => {
     const [tableData, setTableData] = useState([]);
     const [siteData, setSiteData] = useState([]);
     const [portData, setPortData] = useState([]);
-    // const [ipData, setIPData] = useState([]); 
     const [siteOpen, setSiteOpen] = useState(false)
     const [targetPolicy, setTargetPolicy] = useState({});
 
@@ -50,7 +49,6 @@ const FirewallTable = ({ initialPolicies, allList }) => {
         const tempPort = [...port_list]
         const tempIP = [...ip_list]
         setTableData(tempData);
-        // setIPData(tempIP)
         setPortData(tempPort)
         setSiteData(tempSite)
     }, [policy_list, site_list, port_list, ip_list]);
@@ -58,60 +56,37 @@ const FirewallTable = ({ initialPolicies, allList }) => {
     const sendCreatePolicy = async ({ values, table }) => {
         console.log(values)
         console.log(table)
-        // dispatch({ type: 'firewall/createPolicySaga', payload: values });
-        // table.setCreatingRow(null);
     };
 
     const sendEditPolicy = async ({ values, table }) => {
         console.log(values)
         console.log(table)
-        // dispatch({ type: 'firewall/updatePolicySaga', payload: values });
-        // table.setEditingRow(null);
     };
-
-    // const openDeleteConfirmModal = (row) => {
-    //     if (window.confirm('Are you sure you want to delete this policy')) {
-    //         table.getSelectedRowModel().flatRows.map((row) => {
-    //             alert('deactivating ' + row.getValue('name'));
-    //           });
-    //         // dispatch({ type: 'firewall/deletePolicySaga', payload: row.original?.pk });
-    //     }
-    // };
 
     const handleEdit = (row) => {
         setTargetPolicy(row.original);
         table.setEditingRow(row);
     };
 
-    // console.log("Target Policy:", targetPolicy)
-
     const columns = useMemo(
         () => [
             {
                 accessorKey: 'site',
                 header: 'Site',
-                // enableEditing: siteOpen,
-                // editSelectOptions: siteOptions,
                 muiEditTextFieldProps: ({ values, table }) => ({
                     select: true,
-                    // SelectProps: {
-                    //   renderValue: (value) => value || '',
-                    //   MenuProps: { PaperProps: { sx: { maxHeight: 300 } } },
                     children: siteOptions.map(item => (
                         <MenuItem key={item.value} value={item.value}>
                             {item.value}
                         </MenuItem>
                     )),
-                    // },
                 }),
                 accessorFn: (row) => row.destination?.site === 'global' ? row.site : row.destination?.site,
             },
             {
                 accessorKey: 'env',
                 header: 'ENV',
-                muiEditTextFieldProps: {
-                    // select: true,
-                },
+                muiEditTextFieldProps: {},
             },
             {
                 accessorKey: 'source',
@@ -119,46 +94,48 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                 filterVariant: 'autocomplete',
                 filterSelectOptions: ipOptions,
                 filterFn: 'fuzzy',
-                muiEditTextFieldProps: ({ cell, row, table }) => ({
-                    select: true,
-                    onChange: (event) => {
-                        const newValue = event.target.value;
-                        console.log('Source IP onChange:', newValue);
-                        
-                        // 更新编辑行的值
-                        const editingRow = table.getState().editingRow;
-                        if (editingRow) {
-                            table.setEditingRow({
-                                ...editingRow,
-                                _valuesCache: {
-                                    ...editingRow._valuesCache,
-                                    source: newValue,
-                                },
-                            });
-                        }
-                        
-                        // 同时更新tableData
-                        setTableData((prev) =>
-                            prev.map((item) =>
-                                item.id === row.original.id
-                                    ? { ...item, source: newValue }
-                                    : item
-                            )
-                        );
-                    },
-                    value: row.original?.source?.pk || '',
-                    children: ipOptions.map((option) => (
-                        <MenuItem key={option.pk} value={option}>
-                            <Tooltip title={<pre>{option.ip_list}</pre>} placement="right" arrow>
-                                <span>
-                                    {option.name
-                                        ? `${option.name} (${option.site})`
-                                        : `${option.ip_list?.split('\r\n')[0].slice(0, 50)}... (${option.site})`}
-                                </span>
-                            </Tooltip>
-                        </MenuItem>
-                    )),
-                }),
+                muiEditTextFieldProps: ({ cell, row, table }) => {
+                    // 获取当前编辑行的缓存值或原始值
+                    const editingRow = table.getState().editingRow;
+                    const currentValue = editingRow?._valuesCache?.source || row.original?.source;
+                    
+                    return {
+                        select: true,
+                        value: currentValue || '',
+                        onChange: (event) => {
+                            const newValue = event.target.value;
+                            console.log('Source IP onChange:', newValue);
+                            
+                            // 更新编辑行的值
+                            if (editingRow) {
+                                table.setEditingRow({
+                                    ...editingRow,
+                                    _valuesCache: {
+                                        ...editingRow._valuesCache,
+                                        source: newValue,
+                                    },
+                                });
+                            }
+                        },
+                        renderValue: (selected) => {
+                            if (!selected) return '';
+                            return selected.name 
+                                ? `${selected.name} (${selected.site})` 
+                                : `${selected.ip_list?.split('\r\n')[0].slice(0, 50)}... (${selected.site})`;
+                        },
+                        children: ipOptions.map((option) => (
+                            <MenuItem key={option.pk} value={option}>
+                                <Tooltip title={<pre>{option.ip_list}</pre>} placement="right" arrow>
+                                    <span>
+                                        {option.name
+                                            ? `${option.name} (${option.site})`
+                                            : `${option.ip_list?.split('\r\n')[0].slice(0, 50)}... (${option.site})`}
+                                    </span>
+                                </Tooltip>
+                            </MenuItem>
+                        )),
+                    };
+                },
                 accessorFn: (row) => {
                     return row.source?.name
                         ? `${row.source.name} (${row.source.site})`
@@ -171,46 +148,48 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                 filterVariant: 'autocomplete',
                 filterSelectOptions: ipOptions,
                 filterFn: 'equals',
-                muiEditTextFieldProps: ({ cell, row, table }) => ({
-                    select: true,
-                    onChange: (event) => {
-                        const newValue = event.target.value;
-                        console.log('Destination IP onChange:', newValue);
-                        
-                        // 更新编辑行的值
-                        const editingRow = table.getState().editingRow;
-                        if (editingRow) {
-                            table.setEditingRow({
-                                ...editingRow,
-                                _valuesCache: {
-                                    ...editingRow._valuesCache,
-                                    destination: newValue,
-                                },
-                            });
-                        }
-                        
-                        // 同时更新tableData
-                        setTableData((prev) =>
-                            prev.map((item) =>
-                                item.id === row.original.id
-                                    ? { ...item, destination: newValue }
-                                    : item
-                            )
-                        );
-                    },
-                    value: row.original?.destination?.pk || '',
-                    children: ipOptions.map((option) => (
-                        <MenuItem key={option.pk} value={option}>
-                            <Tooltip title={<pre>{option.ip_list}</pre>} placement="right" arrow>
-                                <span>
-                                    {option.name
-                                        ? `${option.name} (${option.site})`
-                                        : `${option.ip_list?.split('\r\n')[0].slice(0, 50)}... (${option.site})`}
-                                </span>
-                            </Tooltip>
-                        </MenuItem>
-                    )),
-                }),
+                muiEditTextFieldProps: ({ cell, row, table }) => {
+                    // 获取当前编辑行的缓存值或原始值
+                    const editingRow = table.getState().editingRow;
+                    const currentValue = editingRow?._valuesCache?.destination || row.original?.destination;
+                    
+                    return {
+                        select: true,
+                        value: currentValue || '',
+                        onChange: (event) => {
+                            const newValue = event.target.value;
+                            console.log('Destination IP onChange:', newValue);
+                            
+                            // 更新编辑行的值
+                            if (editingRow) {
+                                table.setEditingRow({
+                                    ...editingRow,
+                                    _valuesCache: {
+                                        ...editingRow._valuesCache,
+                                        destination: newValue,
+                                    },
+                                });
+                            }
+                        },
+                        renderValue: (selected) => {
+                            if (!selected) return '';
+                            return selected.name 
+                                ? `${selected.name} (${selected.site})` 
+                                : `${selected.ip_list?.split('\r\n')[0].slice(0, 50)}... (${selected.site})`;
+                        },
+                        children: ipOptions.map((option) => (
+                            <MenuItem key={option.pk} value={option}>
+                                <Tooltip title={<pre>{option.ip_list}</pre>} placement="right" arrow>
+                                    <span>
+                                        {option.name
+                                            ? `${option.name} (${option.site})`
+                                            : `${option.ip_list?.split('\r\n')[0].slice(0, 50)}... (${option.site})`}
+                                    </span>
+                                </Tooltip>
+                            </MenuItem>
+                        )),
+                    };
+                },
                 accessorFn: (row) => {
                     const destination = row.destination;
                     return destination?.name
@@ -221,16 +200,12 @@ const FirewallTable = ({ initialPolicies, allList }) => {
             {
                 accessorKey: 'description',
                 header: 'Description',
-                muiEditTextFieldProps: {
-                    // required: true,
-                },
+                muiEditTextFieldProps: {},
             },
             {
                 accessorKey: 'requester',
                 header: 'Requester',
-                muiEditTextFieldProps: {
-                    // required: true,
-                },
+                muiEditTextFieldProps: {},
             },
         ],
         [ipOptions, siteOptions],
