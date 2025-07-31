@@ -125,8 +125,17 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                         const newValue = event.target.value;
                         console.log('Source IP onChange:', newValue);
                         
-                        // 直接设置cell的值
-                        cell.setValue(newValue);
+                        // 更新编辑行的值
+                        const editingRow = table.getState().editingRow;
+                        if (editingRow) {
+                            table.setEditingRow({
+                                ...editingRow,
+                                _valuesCache: {
+                                    ...editingRow._valuesCache,
+                                    source: newValue,
+                                },
+                            });
+                        }
                         
                         // 同时更新tableData
                         setTableData((prev) =>
@@ -137,7 +146,7 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                             )
                         );
                     },
-                    value: cell.getValue()?.pk || '',
+                    value: row.original?.source?.pk || '',
                     children: ipOptions.map((option) => (
                         <MenuItem key={option.pk} value={option}>
                             <Tooltip title={<pre>{option.ip_list}</pre>} placement="right" arrow>
@@ -168,8 +177,17 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                         const newValue = event.target.value;
                         console.log('Destination IP onChange:', newValue);
                         
-                        // 直接设置cell的值
-                        cell.setValue(newValue);
+                        // 更新编辑行的值
+                        const editingRow = table.getState().editingRow;
+                        if (editingRow) {
+                            table.setEditingRow({
+                                ...editingRow,
+                                _valuesCache: {
+                                    ...editingRow._valuesCache,
+                                    destination: newValue,
+                                },
+                            });
+                        }
                         
                         // 同时更新tableData
                         setTableData((prev) =>
@@ -180,7 +198,7 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                             )
                         );
                     },
-                    value: cell.getValue()?.pk || '',
+                    value: row.original?.destination?.pk || '',
                     children: ipOptions.map((option) => (
                         <MenuItem key={option.pk} value={option}>
                             <Tooltip title={<pre>{option.ip_list}</pre>} placement="right" arrow>
