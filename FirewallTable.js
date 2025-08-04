@@ -38,10 +38,32 @@ const FirewallTable = ({ initialPolicies, allList }) => {
     const [ targetPolicy, setTargetPolicy ] = useState({})
 
     const { ipOptions, siteOptions, portOptions } = useMemo(() => {
+        // Filter out any null/undefined options and ensure each has a unique key
+        const safeIpOptions = (allList?.ip_list || [])
+            .filter(option => option && (option.pk || option.id))
+            .map((option, index) => ({
+                ...option,
+                id: option.pk || option.id || `ip-${index}`,
+            }));
+        
+        const safeSiteOptions = (allList?.sites || [])
+            .filter(option => option && (option.pk || option.id || option.name))
+            .map((option, index) => ({
+                ...option,
+                id: option.pk || option.id || `site-${index}`,
+            }));
+        
+        const safePortOptions = (allList?.ports || [])
+            .filter(option => option && (option.pk || option.id))
+            .map((option, index) => ({
+                ...option,
+                id: option.pk || option.id || `port-${index}`,
+            }));
+
         return {
-            ipOptions: [...(allList?.ip_list || [])],
-            siteOptions: [...(allList?.sites || [])],
-            portOptions: [...(allList?.ports || [])],
+            ipOptions: safeIpOptions,
+            siteOptions: safeSiteOptions,
+            portOptions: safePortOptions,
         };
     }, [allList]);
 
@@ -111,6 +133,12 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                 filterVariant: 'autocomplete',
                 filterSelectOptions: siteOptions,
                 filterFn: 'fuzzy',
+                muiFilterAutocompleteProps: {
+                    getOptionLabel: (option) => {
+                        if (!option) return '';
+                        return option.name ? option.name.toUpperCase() : (typeof option === 'string' ? option.toUpperCase() : '');
+                    },
+                },
                 Edit: ({ cell, column, row, table }) => {
                     const [value, setValue] = useState(row.original?.site || null);
                     return (
@@ -136,7 +164,7 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                                     />
                                 )}
                                 renderOption={(props, option) => (
-                                    <li {...props} key={option.pk || option.id || option}>
+                                    <li {...props} key={option.id || option.pk || option}>
                                         {option.name ? option.name.toUpperCase() : (typeof option === 'string' ? option.toUpperCase() : '')}
                                     </li>
                                 )}
@@ -161,6 +189,9 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                 filterVariant: 'autocomplete',
                 filterSelectOptions: ENV_LIST,
                 filterFn: 'fuzzy',
+                muiFilterAutocompleteProps: {
+                    getOptionLabel: (option) => option || '',
+                },
                 Edit: ({ cell, column, row, table }) => {
                     const [value, setValue] = useState(row.original?.env || null);
                     return (
@@ -198,6 +229,14 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                 filterVariant: 'autocomplete',
                 filterSelectOptions: ipOptions,
                 filterFn: 'fuzzy',
+                muiFilterAutocompleteProps: {
+                    getOptionLabel: (option) => {
+                        if (!option) return '';
+                        return option?.name
+                            ? `${option.name} (${option.site})`
+                            : `${option?.ip_list?.split('\r\n')[0]?.slice(0, 50)}... (${option?.site})`;
+                    },
+                },
                 Edit: ({ cell, column, row, table }) => {
                     const [value, setValue] = useState(row.original?.source || null);
                     
@@ -224,7 +263,7 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                                 />
                             )}
                             renderOption={(props, option) => (
-                                <li {...props} key={option.pk || option.id}>
+                                <li {...props} key={option.id || option.pk}>
                                     <Tooltip title={<pre>{option.ip_list}</pre>} placement="right" arrow>
                                         <span>
                                             {option.name
@@ -251,6 +290,14 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                 filterVariant: 'autocomplete',
                 filterSelectOptions: ipOptions,
                 filterFn: 'equals',
+                muiFilterAutocompleteProps: {
+                    getOptionLabel: (option) => {
+                        if (!option) return '';
+                        return option?.name
+                            ? `${option.name} (${option.site})`
+                            : `${option?.ip_list?.split('\r\n')[0]?.slice(0, 50)}... (${option?.site})`;
+                    },
+                },
                 Edit: ({ cell, column, row, table }) => {
                     const [value, setValue] = useState(row.original?.destination || null);
                     
@@ -277,7 +324,7 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                                 />
                             )}
                             renderOption={(props, option) => (
-                                <li {...props} key={option.pk || option.id}>
+                                <li {...props} key={option.id || option.pk}>
                                     <Tooltip title={<pre>{option.ip_list}</pre>} placement="right" arrow>
                                         <span>
                                             {option.name
@@ -306,6 +353,12 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                 filterSelectOptions: portOptions,
                 size: 300,
                 filterFn: 'equals',
+                muiFilterAutocompleteProps: {
+                    getOptionLabel: (option) => {
+                        if (!option) return '';
+                        return option.name || '';
+                    },
+                },
                 Edit: ({ cell, column, row, table }) => {
                     const [value, setValue] = useState(row.original?.port || []);
 
@@ -339,7 +392,7 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                             )}
                             renderOption={(props, option) => (
                                 option?.is_group ? (
-                                    <li {...props} key={option.pk || option.id}>
+                                    <li {...props} key={option.id || option.pk}>
                                         <Tooltip 
                                             title={<pre>
                                                 {(() => {
@@ -362,7 +415,7 @@ const FirewallTable = ({ initialPolicies, allList }) => {
                                         </Tooltip>
                                     </li>
                                 ) : (
-                                    <li {...props} key={option.pk || option.id}>
+                                    <li {...props} key={option.id || option.pk}>
                                         {option.name}
                                     </li>
                                 )
