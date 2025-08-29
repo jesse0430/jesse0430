@@ -1,11 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
-export interface CounterState {
-  value: number;
-  isIncrementing: boolean;
-}
-
-const initialState: CounterState = {
+const initialState = {
   value: 0,
   isIncrementing: false,
 };
@@ -17,7 +12,7 @@ const counterSlice = createSlice({
     incrementRequested(state) {
       state.isIncrementing = true;
     },
-    incrementSucceeded(state, action: PayloadAction<number>) {
+    incrementSucceeded(state, action) {
       state.value += action.payload;
       state.isIncrementing = false;
     },

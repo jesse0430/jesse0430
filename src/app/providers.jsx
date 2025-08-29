@@ -10,7 +10,7 @@ const theme = createTheme({
   },
 });
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children }) {
   return (
     <Provider store={store}>
       <ThemeProvider theme={theme}>
